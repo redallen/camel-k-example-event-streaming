@@ -78,18 +78,16 @@ when certain incidents happen.
 
 ## Installing the AMQ Streams Cluster
 
-We start by creating a project to run AMQ Streams, Red Hat's data streaming platform based on Apache Kafka. To do so, we have to
-execute the following command:
-
-```oc new-project event-streaming-kafka-cluster```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20new-project%20event-streaming-kafka-cluster&completion=Project%20created. "Created a new project for running AMQ Streams "){.didact})
+We start by creating a project to run AMQ Streams, Red Hat's data streaming platform based on Apache Kafka. Go to your working project, open a terminal tab and type the following command:
 
 
-Now, we can go to the OpenShift 4.x WebConsole page, use the OperatorHub menu item on left hand side menu and use it to find and install "Red Hat Integration - AMQ Streams".
-This will install the operator and may take couple minutes to install.
+```
+oc project userX
+```
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20new-project%20camel-basic&completion=New%20project%20creation. "Opens a new terminal and sends the command above"){.didact})
 
-The next step is to create use the operator to create an AMQ Streams cluster. This can be done with the command:
+
+The next step is to create use the AMQ Streams operator to create an AMQ Streams cluster. This can be done with the command:
 
 ```oc create -f infra/kafka/clusters/event-streaming-cluster.yaml```
 
@@ -104,9 +102,9 @@ Depending on how large is you OpenShift cluster, this may take a little. Let's r
 You can can check the state of the cluster by running the following command:
 
 
-```oc get kafkas -n event-streaming-kafka-cluster event-streaming-kafka-cluster```
+```oc get kafkas event-streaming-kafka-cluster```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20kafkas%20-n%20event-streaming-kafka-cluster%20event-streaming-kafka-cluster&completion=Check%20if%20the%20cluster%20was%20created. "Check if the cluster was created"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20kafkas%20event-streaming-kafka-cluster&completion=Check%20if%20the%20cluster%20was%20created. "Check if the cluster was created"){.didact})
 
 Once the AMQ Streams cluster is created. We can proceed to the creation of the AMQ Streams topics:
 
@@ -121,23 +119,8 @@ Once the AMQ Streams cluster is created. We can proceed to the creation of the A
 
 At this point, if all goes well, we should our AMQ Streams cluster up and running with several topics.
 
-## Installing the AMQ Broker Cluster
 
-The installation of the AMQ Broker follows the same isolation pattern as the AMQ Streams one. We will deploy it in a separate project and will
-instruct the operator to deploy a broker according to the configuration.
-
-To create a new project run the following command:
-
-```oc new-project event-streaming-messaging-broker```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20new-project%20event-streaming-messaging-broker&completion=Created%20new%20project%20for%20running%20the%20AMQ%20Broker. "Create project for running AMQ Broker"){.didact})
-
-
-Now, we can go to the OpenShift 4.x WebConsole page, use the OperatorHub menu item on left hand side menu and use it to find and install "AMQ Broker".
-This will install the operator and may take couple minutes to install.
-
-
-With the operator installed and running on the project, then we can proceed and create the broker instance:
+With the AMQ Broker operator installed and running on the project, then we can proceed and create the broker instance:
 
 
 ```oc create -f infra/messaging/broker/instances/amq-broker-instance.yaml```
@@ -161,23 +144,10 @@ If it was successfully created, then we can create the addresses and queues requ
 ## Creating the Event Streaming Project
 
 
-Now that the infrastructure is ready, we can go ahead and deploy the demo project. First, lets create a project for running the demo:
-
-```oc new-project camel-k-event-streaming```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20new-project%20camel-k-event-streaming&completion=Switched%20to%20the%20demo%20project. "Switched to the demo project"){.didact})
 
 You need to be able to admin the project to run the demo. [Click here to verify your permissions.](didact://?commandId=vscode.didact.requirementCheck&text=permissions-project-check$$oc%20auth%20can-i%20admin%20project$$yes&completion=Verified%20that%20the%20you%20have%20correct%20permissions. "Verifies if you can admin the project"){.didact}
 
 *Status: unknown*{#permissions-project-check}
-
-## Installing Camel-K
-
-Before we start running the demo, there's one last operator we need to install: the one used by Camel-K.
-
-```kamel install```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20install&completion=Install%20Camel-K. "Install Camel-K"){.didact})
 
 ## Deploying the Project
 
@@ -192,13 +162,13 @@ expected defaults, so no action should be needed.
 
 In case you need to adjust the configuration, the following 2 commands present information that will be required to configure the deployment:
 
-```oc get services -n event-streaming-messaging-broker```
+```oc get services ```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20-n%20event-streaming-messaging-broker&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
 
-```oc get services -n event-streaming-kafka-cluster```
+```oc get services```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20-n%20event-streaming-kafka-cluster&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
 
 They provide the addresses of the services running on the cluster and can be used to fill in the values on the properties file.
 
@@ -206,7 +176,7 @@ We start by opening the file [./config/application.properties](didact://?command
 
 ```
 kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.event-streaming-kafka-cluster:9094
-messaging.broker.url=tcp://broker-hdls-svc.event-streaming-messaging-broker:61616
+messaging.broker.url=tcp://broker-hdls-svc.userX:61616
 ```
 
 #### Creating the Secret
@@ -367,9 +337,3 @@ To find the public API for the service, we can run the following command:
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20routes%20front-end-external%20-o%20%27jsonpath=%7B.spec.port.targetPort%7D:%2F%2F%7B.spec.host%7D%27&completion=Found%20the%20front-end%20URL. "Gets the front-end URL"){.didact})
 
 Open this URL on the browser and we can now access the front-end.
-
-To cleanup everything, execute the following command:
-
-```oc delete project camel-k-event-streaming event-streaming-messaging-broker event-streaming-kafka-cluster```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20delete%20project%20camel-k-event-streaming%20event-streaming-messaging-broker%20event-streaming-kafka-cluster&completion=Removed%20the%20projects%20from%20the%20cluster. "Cleans up the cluster after running the projects"){.didact})
