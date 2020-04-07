@@ -81,13 +81,23 @@ when certain incidents happen.
 We start by creating a project to run AMQ Streams, Red Hat's data streaming platform based on Apache Kafka. Go to your working project, open a terminal tab and type the following command:
 
 
-```
-oc project userX
-```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20new-project%20camel-basic&completion=New%20project%20creation. "Opens a new terminal and sends the command above"){.didact})
+Go to your working project, open a terminal tab and type the following command:
 
 
-The next step is to create use the AMQ Streams operator to create an AMQ Streams cluster. This can be done with the command:
+```
+oc project userX-lab-3
+```
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20userX-lab-3&completion=Use%20your%20namespace. "Opens a new terminal and sends the command above"){.didact})
+
+You should ensure that the Camel K operator is installed. We'll use the `kamel` CLI to do it:
+
+```
+kamel install --skip-operator-setup --skip-cluster-setup --maven-repository https://maven.repository.redhat.com/ga
+```
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20install%20--skip-operator-setup%20--skip-cluster-setup%20--maven-repository%20https://maven.repository.redhat.com/ga%20OpenShift&completion=Camel%20K%20platform%20installation. "Opens a new terminal and sends the command above"){.didact})
+
+
+The next step is to use the AMQ Streams operator (Already installed) to create an AMQ Streams cluster. This can be done with the command:
 
 ```oc create -f infra/kafka/clusters/event-streaming-cluster.yaml```
 
@@ -153,30 +163,27 @@ You need to be able to admin the project to run the demo. [Click here to verify 
 
 ### Initial Configuration
 
-Most of the components of the demo use use the [./config/application.properties](didact://?commandId=vscode.open&projectFilePath=./config/application.properties&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact} to read the configurations they need to run. This file already comes with
+Most of the components of the demo use use the [config/application.properties](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/config/application.properties&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact} to read the configurations they need to run. This file already comes with
 expected defaults, so no action should be needed.
 
-#### Optional: Configuration Adjustments
-
-*Note*: you can skip this step if you don't want to adjust the configuration
 
 In case you need to adjust the configuration, the following 2 commands present information that will be required to configure the deployment:
 
-```oc get services ```
+```oc get svc -l ActiveMQArtemis=broker```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20svc%20-l%20ActiveMQArtemis=broker&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
 
-```oc get services```
+```oc describe svc -l strimzi.io/kind=Kafka ```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%svc%20-l%20strimzi.io/kind=Kafka%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
 
 They provide the addresses of the services running on the cluster and can be used to fill in the values on the properties file.
 
-We start by opening the file [./config/application.properties](didact://?commandId=vscode.open&projectFilePath=./config/application.properties&newWindow=false&completion=Ok. "Edit the config map"){.didact} and editing the parameters. The content needs to be adjusted to point to the correct addresses of the brokers. It should be similar to this:
+We start by opening the file [application.properties](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/config/application.properties&newWindow=false&completion=Ok. "Edit the config map"){.didact} and editing the parameters. The content needs to be adjusted to point to the correct addresses of the brokers. It should be similar to this:
 
 ```
-kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.event-streaming-kafka-cluster:9094
-messaging.broker.url=tcp://broker-hdls-svc.userX:61616
+kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.userX-lab-3:9094
+messaging.broker.url=tcp://broker-hdls-svc.userX-lab-3:61616
 ```
 
 #### Creating the Secret
@@ -194,7 +201,7 @@ With this configuration secret created on the cluster, we have completed the ini
 
 ### Running the OpenAQ Consumer
 
-Now we will deploy the first component of the demo: [./openaq-consumer/OpenAQConsumer.java](didact://?commandId=vscode.open&projectFilePath=./openaq-consumer/OpenAQConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact}
+Now we will deploy the first component of the demo: [./openaq-consumer/OpenAQConsumer.java](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/openaq-consumer/OpenAQConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact}
 
 ```kamel run openaq-consumer/OpenAQConsumer.java model/pollution/* --name open-aq-consumer```
 
@@ -208,7 +215,7 @@ code and used to reach the instance.
 
 ### Running the USGS Earthquake Alert System Consumer
 
-The second component on our demo is a [consumer](didact://?commandId=vscode.open&projectFilePath=./usgs-consumer/EarthquakeConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact} for events from the [USGS Earthquake Alert System](https://earthquake.usgs.gov/fdsnws/event/1/).
+The second component on our demo is a [consumer](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/usgs-consumer/EarthquakeConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact} for events from the [USGS Earthquake Alert System](https://earthquake.usgs.gov/fdsnws/event/1/).
 
 ```kamel run usgs-consumer/EarthquakeConsumer.java model/earthquake/* --name earthquake-consumer```
 
@@ -228,7 +235,7 @@ them on the OpenShift cluster. To do so we can execute the following command:
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20infra%2Fknative%2Fchannels%2Faudit-channel.yaml&completion=Create%20Knative%20eventing%20channel. "Create knative eventing channel"){.didact})
 
 
-The [Gatekeeper service](didact://?commandId=vscode.open&projectFilePath=./audit-gatekeeper/GateKeeper.java&newWindow=false&completion=Ok. "View the source code"){.didact} simulates a service that is used to audit accesses to the system. It leverages knative support from Camel-K.
+The [Gatekeeper service](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/audit-gatekeeper/GateKeeper.java&newWindow=false&completion=Ok. "View the source code"){.didact} simulates a service that is used to audit accesses to the system. It leverages knative support from Camel-K.
 
 ```kamel run audit-gatekeeper/GateKeeper.java```
 
@@ -239,7 +246,7 @@ The [Gatekeeper service](didact://?commandId=vscode.open&projectFilePath=./audit
 ### Running the User Report System
 
 
-The [User Report System](didact://?commandId=vscode.open&projectFilePath=./user-report-system/UserReportSystem.java&newWindow=false&completion=Ok. "View the source code"){.didact}  simulates a service that is used to receive user-generated reports on the the system. It receives events sent by the user and sends them to the AMQ Streams instance. To run this component execute the following command:
+The [User Report System](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/user-report-system/UserReportSystem.java&newWindow=false&completion=Ok. "View the source code"){.didact}  simulates a service that is used to receive user-generated reports on the the system. It receives events sent by the user and sends them to the AMQ Streams instance. To run this component execute the following command:
 
 ```kamel run user-report-system/UserReportSystem.java model/common/Data.java --name user-report-system```
 
