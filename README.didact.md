@@ -85,9 +85,9 @@ Go to your working project, open a terminal tab and type the following command:
 
 
 ```
-oc project userX-lab-3
+oc project userX-lab-streaming
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20userX-lab-3&completion=Use%20your%20namespace. "Opens a new terminal and sends the command above"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20userX-lab-streaming&completion=Use%20your%20namespace. "Opens a new terminal and sends the command above"){.didact})
 
 You should ensure that the Camel K operator is installed. We'll use the `kamel` CLI to do it:
 
@@ -182,8 +182,8 @@ They provide the addresses of the services running on the cluster and can be use
 We start by opening the file [application.properties](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/config/application.properties&newWindow=false&completion=Ok. "Edit the config map"){.didact} and editing the parameters. The content needs to be adjusted to point to the correct addresses of the brokers. It should be similar to this:
 
 ```
-kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.userX-lab-3:9094
-messaging.broker.url=tcp://broker-hdls-svc.userX-lab-3:61616
+kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.userX-lab-streaming:9094
+messaging.broker.url=tcp://broker-hdls-svc.userX-lab-streaming:61616
 ```
 
 #### Creating the Secret
