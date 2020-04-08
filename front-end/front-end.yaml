@@ -9,7 +9,6 @@ spec:
   ports:
     - name: http
       port: 8080
-      nodePort: 30080
   selector:
     app: camel-k-example-event-streaming
     component: front-end
@@ -50,7 +49,7 @@ spec:
     spec:
       containers:
         - name: front-end
-          image: image-registry.openshift-image-registry.svc:5000/camel-k-event-streaming/front-end:latest
+          image: image-registry.openshift-image-registry.svc:5000/userX-lab-streaming/front-end:latest
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
