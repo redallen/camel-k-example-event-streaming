@@ -155,7 +155,7 @@ If it was successfully created, then we can create the addresses and queues requ
 
 
 
-You need to be able to admin the project to run the demo. [Click here to verify your permissions.](didact://?commandId=vscode.didact.requirementCheck&text=permissions-project-check$$oc%20auth%20can-i%20admin%20project$$yes&completion=Verified%20that%20the%20you%20have%20correct%20permissions. "Verifies if you can admin the project"){.didact}
+You need to be able to admin the project to run the demo. [Click here to verify your permissions.](didact://?commandId=vscode.didact.requirementCheck&text=permissions-project-check$$oc%20auth%20can-i%20admin%20project$$yes&completion=Verified%20that%20you%20have%20correct%20permissions. "Verifies if you can admin the project"){.didact}
 
 *Status: unknown*{#permissions-project-check}
 
@@ -173,9 +173,9 @@ In case you need to adjust the configuration, the following 2 commands present i
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20svc%20-l%20ActiveMQArtemis=broker&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
 
-```oc describe svc -l strimzi.io/kind=Kafka ```
+```oc get svc -l strimzi.io/kind=Kafka ```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%svc%20-l%20strimzi.io/kind=Kafka%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20svc%20-l%20strimzi.io/kind=Kafka%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
 
 They provide the addresses of the services running on the cluster and can be used to fill in the values on the properties file.
 
