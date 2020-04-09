@@ -301,25 +301,19 @@ so with the command:
 This web front end queries the timeline bridge service and displays the events collected at the time. We will use
 OpenShift build services to build a container with the front-end and run it on the cluster.
 
-The front-end image leverages the offical [Apache Httpd 2.4](https://access.redhat.com/containers/?tab=tech-details#/registry.access.redhat.com/rhscl/httpd-24-rhel7) image from Red Hat's container registry. To download this image, we have to create a secret that contains the username and password
-for the registry so that the image can be downloaded. To do so, execute the following command replacing `$myUserName` with your username
-and `$myPassword` with your password:
+The front-end image leverages the offical [Apache Httpd 2.4](https://access.redhat.com/containers/?tab=tech-details#/registry.access.redhat.com/rhscl/httpd-24-rhel7) image from Red Hat's container registry. 
 
-```oc create secret docker-registry redhat-registry --docker-server=registry.redhat.io --docker-username=$myUserName --docker-password=$myPassword```
+```oc import-image rhscl/httpd-24-rhel7 --from=quay.io/weimeilin79/httpd-24-rhel7 --confirm```
 
-With the secret created, we can import the image to the cluster internal registry:
-
-```oc import-image rhscl/httpd-24-rhel7 --from=registry.access.redhat.com/rhscl/httpd-24-rhel7 --confirm```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20import-image%20rhscl%2Fhttpd-24-rhel7%20--from=registry.access.redhat.com%2Frhscl%2Fhttpd-24-rhel7%20--confirm&completion=Imported%20the%20image. "Imported httpd image"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20import-image%20rhscl%2Fhttpd-24-rhel7%20--from=quay.io%2weimeilin79%2httpd-24-rhel7%20--confirm&completion=Imported%20the%20image. "Imported httpd image"){.didact})
 
 Then we can proceed to creating the build configuration and starting the build within the OpenShift cluster. The
 following command replaces the URL for the timeline API on the Java Script code and launches an image build.
 
 
-```URL=$(oc get ksvc timeline-bridge -o 'jsonpath={.status.url}') ; cat ./front-end/Dockerfile|  oc new-build --docker-image="registry.redhat.io/rhscl/httpd-24-rhel7:latest" --to=front-end --build-arg="URL=$URL" -D -```
+```URL=$(oc get ksvc timeline-bridge -o 'jsonpath={.status.url}') ; cat ./front-end/Dockerfile|  oc new-build --docker-image="quay.io/weimeilin79/httpd-24-rhel7:latest" --to=front-end --build-arg="URL=$URL" -D -```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL=$%28oc%20get%20ksvc%20timeline-bridge%20-o%20%27jsonpath=%7B.status.url%7D%27%29%20%3B%20cat%20.%2Ffront-end%2FDockerfile%7C%20oc%20new-build%20--docker-image=registry.redhat.io%2Frhscl%2Fhttpd-24-rhel7:latest%20--to=front-end%20--build-arg=URL=$URL%20-D%20-&completion=Created%20the%20build%20configuration. "Creates the build configuration"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL=$%28oc%20get%20ksvc%20timeline-bridge%20-o%20%27jsonpath=%7B.status.url%7D%27%29%20%3B%20cat%20.%2Ffront-end%2FDockerfile%7C%20oc%20new-build%20--docker-image=quay.io%2weimeilin79%2httpd-24-rhel7:latest%20--to=front-end%20--build-arg=URL=$URL%20-D%20-&completion=Created%20the%20build%20configuration. "Creates the build configuration"){.didact})
 
 
 Open the [front-end/front-end.yaml](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/front-end/front-end.yaml&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact}
