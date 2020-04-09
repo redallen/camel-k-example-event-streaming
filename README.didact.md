@@ -151,13 +151,6 @@ If it was successfully created, then we can create the addresses and queues requ
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20infra%2Fmessaging%2Fbroker%2Finstances%2Faddresses&completion=Create%20the%20addresses. "Create the addresses"){.didact})
 
 
-## Creating the Event Streaming Project
-
-
-
-You need to be able to admin the project to run the demo. [Click here to verify your permissions.](didact://?commandId=vscode.didact.requirementCheck&text=permissions-project-check$$oc%20auth%20can-i%20admin%20project$$yes&completion=Verified%20that%20you%20have%20correct%20permissions. "Verifies if you can admin the project"){.didact}
-
-*Status: unknown*{#permissions-project-check}
 
 ## Deploying the Project
 
@@ -328,6 +321,14 @@ following command replaces the URL for the timeline API on the Java Script code 
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL=$%28oc%20get%20ksvc%20timeline-bridge%20-o%20%27jsonpath=%7B.status.url%7D%27%29%20%3B%20cat%20.%2Ffront-end%2FDockerfile%7C%20oc%20new-build%20--docker-image=registry.redhat.io%2Frhscl%2Fhttpd-24-rhel7:latest%20--to=front-end%20--build-arg=URL=$URL%20-D%20-&completion=Created%20the%20build%20configuration. "Creates the build configuration"){.didact})
 
+
+Open the [front-end/front-end.yaml](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/front-end/front-end.yaml&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact}
+
+Replace image namespace with your username
+
+```
+image: image-registry.openshift-image-registry.svc:5000/userX-lab-streaming/front-end:latest
+```
 
 With the build complete, we can go ahead and create a deployment for the front-end:
 
