@@ -305,10 +305,10 @@ The front-end image leverages the offical [Apache Httpd 2.4](https://access.redh
 
 ```oc import-image rhscl/httpd-24-rhel7 --from=quay.io/weimeilin79/httpd-24-rhel7 --confirm```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20import-image%20rhscl%2Fhttpd-24-rhel7%20--from=quay.io%2weimeilin79%2httpd-24-rhel7%20--confirm&completion=Imported%20the%20image. "Imported httpd image"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20import-image%20rhscl%2Fhttpd-24-rhel7%20--from=quay.io%2weimeilin79%shttpd-24-rhel7%20--confirm&completion=Imported%20the%20image. "Imported httpd image"){.didact})
 
-Then we can proceed to creating the build configuration and starting the build within the OpenShift cluster. The
-following command replaces the URL for the timeline API on the Java Script code and launches an image build.
+Then we can proceed to creating the build configuration and starting the build within the OpenShift cluster. 
+The following command replaces the URL for the timeline API on the Java Script code and launches an image build.
 
 
 ```URL=$(oc get ksvc timeline-bridge -o 'jsonpath={.status.url}') ; cat ./front-end/Dockerfile|  oc new-build --docker-image="quay.io/weimeilin79/httpd-24-rhel7:latest" --to=front-end --build-arg="URL=$URL" -D -```
