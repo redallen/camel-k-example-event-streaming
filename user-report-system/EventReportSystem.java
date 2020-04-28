@@ -10,7 +10,7 @@ import org.apache.camel.builder.RouteBuilder;
 
 import org.apache.camel.model.dataformat.JsonLibrary;
 
-public class UserReportSystem extends RouteBuilder {
+public class EventReportSystem extends RouteBuilder {
 
     @PropertyInject("users.allowed")
     private String usersAllowed;
@@ -20,22 +20,10 @@ public class UserReportSystem extends RouteBuilder {
         final String VALID_HEADER = "valid";
         final String REPORT_TYPE_HEADER = "type";
 
-        restConfiguration()
-                .component("netty-http")
-                .host("0.0.0.0")
-                .port("8080");
-
-        rest("/")
-                .get("/report/list").to("direct:report-list")
-                .put("/report/new").to("direct:report-new");
-
-        from("direct:report-list")
-                .transform().constant("Not implemented");
-
-        from("direct:report-new")
-                .streamCaching()
-                .wireTap("direct:audit")
-                .unmarshal().json(JsonLibrary.Jackson, Data.class)
+        
+        from("knative:endpoint/event-report-system")
+            .wireTap("direct:audit")
+            .unmarshal().json(JsonLibrary.Jackson, Data.class)
                 .step()
                     .to("direct:authenticate")
                     .choice()
@@ -86,7 +74,6 @@ public class UserReportSystem extends RouteBuilder {
                             ObjectMapper mapper = new ObjectMapper();
 
                             switch (report.getType()) {
-                                case "health":
                                 case "crime": {
                                     exchange.getMessage().setHeader(VALID_HEADER, true);
                                     exchange.getMessage().setHeader(REPORT_TYPE_HEADER, report.getType());
@@ -111,9 +98,6 @@ public class UserReportSystem extends RouteBuilder {
                             .when(header(REPORT_TYPE_HEADER).isEqualTo("crime"))
                                 .to("kafka:crime-data?brokers={{kafka.bootstrap.address}}")
                                 .transform().constant("OK").stop()
-                            .when(header(REPORT_TYPE_HEADER).isEqualTo("health"))
-                                .to("kafka:health-data?brokers={{kafka.bootstrap.address}}")
-                                .transform().constant("OK");
 
 
 

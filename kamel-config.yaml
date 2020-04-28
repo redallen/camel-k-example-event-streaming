@@ -23,3 +23,5 @@ kamel:
       user-report-system:
         dependencies: '[camel-netty-http]'
         secrets: '[example-event-streaming-user-reporting]'
+      event-report-system:
+        secrets: '[example-event-streaming-user-reporting]'

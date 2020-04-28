@@ -9,8 +9,49 @@ Make sure you check-out this repository from git and open it with [VSCode](https
 Instructions are based on [VSCode Didact](https://github.com/redhat-developer/vscode-didact), so make sure it's installed
 from the VSCode extensions marketplace.
 
-From the VSCode UI, click on the `readme.didact.md` file and select "Didact: Start Didact tutorial from File". A new Didact tab will be opened in VS Code.
+From the VSCode UI, right-click on the `readme.didact.md` file and select "Didact: Start Didact tutorial from File". A new Didact tab will be opened in VS Code.
 
+Make sure you've opened this readme file with Didact before jumping to the next section.
+
+## Preparing the cluster
+
+This example can be run on any OpenShift 4.3+ cluster or a local development instance (such as [CRC](https://github.com/code-ready/crc)). Ensure that you have a cluster available and login to it using the OpenShift `oc` command line tool.
+
+You need to create a new project named `camel-k-event-streaming` for running this example. This can be done directly from the OpenShift web console or by executing the command `oc new-project camel-k-event-streaming` on a terminal window.
+
+You need to install the Camel K operator in the `camel-k-event-streaming` project. To do so, go to the OpenShift 4.x web console, login with a cluster admin account and use the OperatorHub menu item on the left to find and install **"Red Hat Integration - Camel K"**. You will be given the option to install it globally on the cluster or on a specific namespace.
+If using a specific namespace, make sure you select the `camel-k-event-streaming` project from the dropdown list.
+This completes the installation of the Camel K operator (it may take a couple of minutes).
+
+When the operator is installed, from the OpenShift Help menu ("?") at the top of the WebConsole, you can access the "Command Line Tools" page, where you can download the **"kamel"** CLI, that is required for running this example. The CLI must be installed in your system path.
+
+Refer to the **"Red Hat Integration - Camel K"** documentation for a more detailed explanation of the installation steps for the operator and the CLI.
+
+### Installing the AMQ Streams Operator
+
+This example uses AMQ Streams, Red Hat's data streaming platform based on Apache Kafka.
+We want to install it on a new project named `event-streaming-kafka-cluster`. 
+
+You need to create the `event-streaming-kafka-cluster` project from the OpenShift web console or by executing the command `oc new-project event-streaming-kafka-cluster` on a terminal window. 
+
+Now, we can go to the OpenShift 4.x WebConsole page, use the OperatorHub menu item on the left hand side menu and use it to find and install **"Red Hat Integration - AMQ Streams"**.
+This will install the operator and may take a couple minutes to install.
+
+### Installing the AMQ Broker Operator
+
+The installation of the AMQ Broker follows the same isolation pattern as the AMQ Streams one. We will deploy it in a separate project and will
+instruct the operator to deploy a broker according to the configuration.
+
+You need to create the `event-streaming-messaging-broker` project from the OpenShift web console or by executing the command `oc new-project event-streaming-messaging-broker` on a terminal window. 
+
+Now, we can go to the OpenShift 4.x WebConsole page, use the OperatorHub menu item on the left hand side menu and use it to find and install **"Red Hat Integration - AMQ Broker"**.
+This will install the operator and may take a couple minutes to install.
+
+### Installing OpenShift Serverless
+
+This demo also needs OpenShift Serverless (Knative) installed and working.
+
+Refer to the [OpenShift Serverless Documentation](https://docs.openshift.com/container-platform/4.3/serverless/installing_serverless/installing-openshift-serverless.html) for instructions on how to install it on your cluster.
 
 ## Requirements
 
@@ -68,42 +109,27 @@ You can install it from the VS Code Extensions marketplace.
 
 ## Understanding the Demo Scenario
 
-This demo simulates a global hazard alert system. The simulator consumes data from multiple public APIs available on the internet
+This demo simulates a global hazard alert system. The simulator consumes data from a public APIs available on the internet
 as well as user-provided data that simulates different types of hazards (ie.: crime, viruses, natural hazards and others).
-The system consumes data from sources such as OpenAQ API (an open API that is used to query air pollution information),
-USGS Earthquake Hazards Program, etc to consume data about hazards and present information about them and warn the user
-when certain incidents happen.
+The system consumes data from OpenAQ API to query air pollution information consume, present information and warn the user when certain incidents happen.
 
-![Diagram](https://raw.githubusercontent.com/openshift-integration/camel-k-example-event-streaming/master/docs/Diagram.png)
+![Diagram](docs/Diagram.png)
 
-## Installing the AMQ Streams Cluster
+## 1. Creating the AMQ Streams Cluster
 
-We start by creating a project to run AMQ Streams, Red Hat's data streaming platform based on Apache Kafka. Go to your working project, open a terminal tab and type the following command:
+We switch to the `event-streaming-kafka-cluster` project to create the Kafka cluster:
 
+```oc project event-streaming-kafka-cluster```
 
-Go to your working project, open a terminal tab and type the following command:
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20event-streaming-kafka-cluster&completion=Project%20changed. "Switched to the project that will run AMQ Streams "){.didact})
 
-
-```
-oc project userX-lab-streaming
-```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20userX-lab-streaming&completion=Use%20your%20namespace. "Opens a new terminal and sends the command above"){.didact})
-
-You should ensure that the Camel K operator is installed. We'll use the `kamel` CLI to do it:
-
-```
-kamel install --skip-operator-setup --skip-cluster-setup --maven-repository https://maven.repository.redhat.com/ga
-```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20install%20--skip-operator-setup%20--skip-cluster-setup%20--maven-repository%20https://maven.repository.redhat.com/ga%20OpenShift&completion=Camel%20K%20platform%20installation. "Opens a new terminal and sends the command above"){.didact})
-
-
-The next step is to use the AMQ Streams operator (Already installed) to create an AMQ Streams cluster. This can be done with the command:
+The next step is to use the operator to create an AMQ Streams cluster. This can be done with the command:
 
 ```oc create -f infra/kafka/clusters/event-streaming-cluster.yaml```
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20create%20-f%20infra%2Fkafka%2Fclusters%2Fevent-streaming-cluster.yaml&completion=Created%20the%20AMQ%20Streams%20cluster. "Creates the AMQ Streams cluster"){.didact})
 
-Depending on how large is you OpenShift cluster, this may take a little. Let's run this command and wait until the cluster is up and running.
+Depending on how large your OpenShift cluster is, this may take a little while to complete. Let's run this command and wait until the cluster is up and running.
 
 ```oc wait kafka/event-streaming-kafka-cluster --for=condition=Ready --timeout=600s```
 
@@ -112,9 +138,9 @@ Depending on how large is you OpenShift cluster, this may take a little. Let's r
 You can can check the state of the cluster by running the following command:
 
 
-```oc get kafkas event-streaming-kafka-cluster```
+```oc get kafkas -n event-streaming-kafka-cluster event-streaming-kafka-cluster```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20kafkas%20event-streaming-kafka-cluster&completion=Check%20if%20the%20cluster%20was%20created. "Check if the cluster was created"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20kafkas%20-n%20event-streaming-kafka-cluster%20event-streaming-kafka-cluster&completion=Check%20if%20the%20cluster%20was%20created. "Check if the cluster was created"){.didact})
 
 Once the AMQ Streams cluster is created. We can proceed to the creation of the AMQ Streams topics:
 
@@ -129,8 +155,15 @@ Once the AMQ Streams cluster is created. We can proceed to the creation of the A
 
 At this point, if all goes well, we should our AMQ Streams cluster up and running with several topics.
 
+## 2. Creating the AMQ Broker Cluster
 
-With the AMQ Broker operator installed and running on the project, then we can proceed and create the broker instance:
+To switch to the `event-streaming-messaging-broker` project, run the following command:
+
+```oc project event-streaming-messaging-broker```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20event-streaming-messaging-broker&completion=Switched%20to%20project%20for%20running%20the%20AMQ%20Broker. "Switched to the project that will run the AMQ Broker"){.didact})
+
+Having already the operator installed and running on the project, we can proceed to create the broker instance:
 
 
 ```oc create -f infra/messaging/broker/instances/amq-broker-instance.yaml```
@@ -151,32 +184,44 @@ If it was successfully created, then we can create the addresses and queues requ
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20infra%2Fmessaging%2Fbroker%2Finstances%2Faddresses&completion=Create%20the%20addresses. "Create the addresses"){.didact})
 
 
+## 3. Deploying the Project
 
-## Deploying the Project
+Now that the infrastructure is ready, we can go ahead and deploy the demo project. First, lets switch to the main project:
+
+```oc project camel-k-event-streaming```
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20project%20camel-k-event-streaming&completion=Switched%20to%20the%20demo%20project. "Switched to the demo project"){.didact})
+
+
+```kamel install --skip-operator-setup --skip-cluster-setup --maven-repository https://maven.repository.redhat.com/ga```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20install%20--skip-operator-setup%20--skip-cluster-setup%20--maven-repository%20https://maven.repository.redhat.com/ga&completion=Switched%20to%20the%20demo%20project. "Switched to the demo project"){.didact})
 
 ### Initial Configuration
 
-Most of the components of the demo use use the [config/application.properties](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/config/application.properties&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact} to read the configurations they need to run. This file already comes with
+Most of the components of the demo use use the [./config/application.properties](didact://?commandId=vscode.open&projectFilePath=./config/application.properties&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact} to read the configurations they need to run. This file already comes with
 expected defaults, so no action should be needed.
 
+#### Optional: Configuration Adjustments
+
+*Note*: you can skip this step if you don't want to adjust the configuration
 
 In case you need to adjust the configuration, the following 2 commands present information that will be required to configure the deployment:
 
-```oc get svc -l ActiveMQArtemis=broker```
+```oc get services -n event-streaming-messaging-broker```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20svc%20-l%20ActiveMQArtemis=broker&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20-n%20event-streaming-messaging-broker&completion=Get%20the%20AMQ%20Broker%20services. "Get the AMQ Broker services"){.didact})
 
-```oc get svc -l strimzi.io/kind=Kafka ```
+```oc get services -n event-streaming-kafka-cluster```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20svc%20-l%20strimzi.io/kind=Kafka%20&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20services%20-n%20event-streaming-kafka-cluster&completion=Get%20the%20AMQ%20Streams%20services. "Get the AMQ Streams services"){.didact})
 
 They provide the addresses of the services running on the cluster and can be used to fill in the values on the properties file.
 
-We start by opening the file [application.properties](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/config/application.properties&newWindow=false&completion=Ok. "Edit the config map"){.didact} and editing the parameters. The content needs to be adjusted to point to the correct addresses of the brokers. It should be similar to this:
+We start by opening the file [./config/application.properties](didact://?commandId=vscode.open&projectFilePath=./config/application.properties&newWindow=false&completion=Ok. "Edit the config map"){.didact} and editing the parameters. The content needs to be adjusted to point to the correct addresses of the brokers. It should be similar to this:
 
 ```
-kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-brokers.userX-lab-streaming:9094
-messaging.broker.url=tcp://broker-hdls-svc.userX-lab-streaming:61616
+kafka.bootstrap.address=event-streaming-kafka-cluster-kafka-bootstrap.event-streaming-kafka-cluster:9092
+messaging.broker.url=tcp://broker-hdls-svc.event-streaming-messaging-broker:61616
 ```
 
 #### Creating the Secret
@@ -192,9 +237,12 @@ We can push the secret to the cluster using the following command:
 
 With this configuration secret created on the cluster, we have completed the initial steps to get the demo running.
 
-### Running the OpenAQ Consumer
+### Pollution Report 
+![Diagram](docs/Pollution.png)
 
-Now we will deploy the first component of the demo: [./openaq-consumer/OpenAQConsumer.java](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/openaq-consumer/OpenAQConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact}
+#### Running the OpenAQ Consumer
+
+Now we will deploy the first component of the demo: [./openaq-consumer/OpenAQConsumer.java](didact://?commandId=vscode.open&projectFilePath=./openaq-consumer/OpenAQConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact}
 
 ```kamel run openaq-consumer/OpenAQConsumer.java model/pollution/* --name open-aq-consumer```
 
@@ -205,18 +253,56 @@ Now we will deploy the first component of the demo: [./openaq-consumer/OpenAQCon
 our AMQ Stream instance. The demo addresses for the AMQ Streams broker is stored in the `example-event-streaming` which is inject into the demo
 code and used to reach the instance.
 
+#### Running the Pollution Bridge
 
-### Running the USGS Earthquake Alert System Consumer
+This service consumes the pollution events and sends it to the timeline topic for consumption. Also sending notification and alarms to AMQ brokers.
 
-The second component on our demo is a [consumer](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/usgs-consumer/EarthquakeConsumer.java&newWindow=false&completion=Ok. "View the source code"){.didact} for events from the [USGS Earthquake Alert System](https://earthquake.usgs.gov/fdsnws/event/1/).
+```kamel run event-bridge/PollutionBridge.java model/common/Alert.java model/pollution/PollutionData.java --name pollution-bridge```
 
-```kamel run usgs-consumer/EarthquakeConsumer.java model/earthquake/* --name earthquake-consumer```
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FPollutionBridge.java%20model%2Fcommon%2FAlert.java%20model%2Fpollution%2FPollutionData.java%20--name%20pollution-bridge&completion=Run%20the%20Pollution%20bridge. "Run the Pollution bridge"){.didact})
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20usgs-consumer%2FEarthquakeConsumer.java%20model%2Fearthquake%2F*%20--name%20earthquake-consumer&completion=Started%20the%20USGS%20Earhquake%20Alert%20Consumer. "Creates and starts the USGS Earthquake Alert Consumer"){.didact})
+#### Running the Timeline Bridge
+This service consumes all the events to the web Front-end for display purpose
+
+```kamel run event-bridge/TimelineBridge.java```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FTimelineBridge.java&completion=Run%20the%20Timeline%20Bridge. "Run the Timeline Bridge"){.didact})
 
 
-**Details**: this works in a similar way to the OpenAQ consumer.
+#### Running the Front-end
 
+This web front end queries the timeline bridge service and displays the events collected at the time. We will use
+OpenShift build services to build a container with the front-end and run it on the cluster.
+
+The front-end image leverages the official [Apache Httpd 2.4](https://access.redhat.com/containers/?tab=tech-details#/registry.access.redhat.com/rhscl/httpd-24-rhel7) image from Red Hat's container registry.
+
+We can proceed to creating the build configuration and starting the build within the OpenShift cluster. The
+following command replaces the URL for the timeline API on the Javascript code and launches an image build.
+
+
+```URL=$(oc get ksvc timeline-bridge -o 'jsonpath={.status.url}') ; cat ./front-end/Dockerfile| oc new-build --docker-image="registry.access.redhat.com/rhscl/httpd-24-rhel7:latest" --to=front-end --build-arg="URL=$URL" -D -```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL%3D%24(oc%20get%20ksvc%20timeline-bridge%20-o%20%27jsonpath%3D%7B.status.url%7D%27)%20%3B%20cat%20.%2Ffront-end%2FDockerfile%7C%20oc%20new-build%20--docker-image%3D%22registry.access.redhat.com%2Frhscl%2Fhttpd-24-rhel7%3Alatest%22%20--to%3Dfront-end%20--build-arg%3D%22URL%3D%24URL%22%20-D%20-&completion=Created%20the%20build%20configuration. "Creates the build configuration"){.didact})
+
+
+With the build complete, we can go ahead and create a deployment for the front-end:
+
+```oc apply -f front-end/front-end.yaml```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20front-end%2Ffront-end.yaml&completion=Deployed%20the%20front-end. "Deploys the front-end"){.didact})
+
+Now, let's get the front-end URL so that we can open it on the browser.
+To find the public API for the service, we can run the following command:
+
+```oc get routes front-end-external -o 'jsonpath={.spec.port.targetPort}://{.spec.host}'```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20routes%20front-end-external%20-o%20%27jsonpath=%7B.spec.port.targetPort%7D:%2F%2F%7B.spec.host%7D%27&completion=Found%20the%20front-end%20URL. "Gets the front-end URL"){.didact})
+
+Open this URL on the browser and we can now access the front-end, and you should be able to see the pollution now showing in the browser. If pm > 25 it will display as RED and yellow for the rest. 
+
+
+### Crime Report 
+![Diagram](docs/Crime.png)
 
 ### Running the GateKeeper
 
@@ -228,49 +314,25 @@ them on the OpenShift cluster. To do so we can execute the following command:
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20infra%2Fknative%2Fchannels%2Faudit-channel.yaml&completion=Create%20Knative%20eventing%20channel. "Create knative eventing channel"){.didact})
 
 
-The [Gatekeeper service](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/audit-gatekeeper/GateKeeper.java&newWindow=false&completion=Ok. "View the source code"){.didact} simulates a service that is used to audit accesses to the system. It leverages knative support from Camel-K.
+The [Gatekeeper service](didact://?commandId=vscode.open&projectFilePath=./audit-gatekeeper/GateKeeper.java&newWindow=false&completion=Ok. "View the source code"){.didact} simulates a service that is used to audit accesses to the system. It leverages knative support from Camel-K.
 
 ```kamel run audit-gatekeeper/GateKeeper.java```
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20audit-gatekeeper%2FGateKeeper.java&completion=Run%20the%20GateKeeper%20audit. "Run the GateKeeper audit"){.didact})
 
-**Details**: this works in a similar way to the OpenAQ consumer.
-
-### Running the User Report System
 
 
-The [User Report System](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/user-report-system/UserReportSystem.java&newWindow=false&completion=Ok. "View the source code"){.didact}  simulates a service that is used to receive user-generated reports on the the system. It receives events sent by the user and sends them to the AMQ Streams instance. To run this component execute the following command:
+### Running the Event Report System 
 
-```kamel run user-report-system/UserReportSystem.java model/common/Data.java --name user-report-system```
+
+The [Event Report System](didact://?commandId=vscode.open&projectFilePath=./user-report-system/UserReportSystem.java&newWindow=false&completion=Ok. "View the source code"){.didact}  simulates a service that is used to receive user-generated reports on the system. It receives events sent by the user and sends them to the AMQ Streams instance. To run this component execute the following command:
+
+```kamel run user-report-system/EventReportSystem.java model/common/Data.java --name event-report-system```
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20user-report-system%2FUserReportSystem.java%20model%2Fcommon%2FData.java%20--name%20user-report-system&completion=Run%20the%20User%20Report%20System. "Run the User Report System"){.didact})
 
 
-### Running the Service Bridges
 
-The service bridges consume the event data and prepare them for consumption.
-
-#### Running the Pollution Bridge
-
-This service consumes the pollution events and sends it to the timeline topic for consumption.
-
-```kamel run event-bridge/PollutionBridge.java model/common/Alert.java model/pollution/PollutionData.java --name pollution-bridge```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FPollutionBridge.java%20model%2Fcommon%2FAlert.java%20model%2Fpollution%2FPollutionData.java%20--name%20pollution-bridge&completion=Run%20the%20Pollution%20bridge. "Run the Pollution bridge"){.didact})
-
-
-#### Running the Earthquake Bridge
-
-```kamel run event-bridge/EarthquakeBridge.java model/common/Alert.java model/earthquake/Feature.java --name earthquake-bridge```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FEarthquakeBridge.java%20model%2Fcommon%2FAlert.java%20model%2Fearthquake%2FFeature.java%20--name%20earthquake-bridge&completion=Run%20the%20Earthquake%20Bridge. "Run the Earthquake Bridge"){.didact})
-
-
-#### Running the Health Alert Bridge
-
-```kamel run event-bridge/HealthBridge.java model/common/* --name health-bridge```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FHealthBridge.java%20model%2Fcommon%2F*%20--name%20health-bridge&completion=Run%20the%20HealthBridge. "Run the HealthBridge"){.didact})
 
 
 #### Running the Crime Bridge
@@ -279,11 +341,6 @@ This service consumes the pollution events and sends it to the timeline topic fo
 
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FCrimeBridge.java%20model%2Fcommon%2F*%20--name%20crime-bridge&completion=Run%20the%20CrimeBridge. "Run the CrimeBridge"){.didact})
 
-#### Running the Timeline Bridge
-
-```kamel run event-bridge/TimelineBridge.java```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20event-bridge%2FTimelineBridge.java&completion=Run%20the%20Timeline%20Bridge. "Run the Timeline Bridge"){.didact})
 
 
 #### Checking the State of the Integrations
@@ -296,46 +353,12 @@ so with the command:
 ([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20get&completion=Checked%20the%20state%20of%20the%20integrations. "Checks the state of the integrations"){.didact})
 
 
-#### Running the Front-end
-
-This web front end queries the timeline bridge service and displays the events collected at the time. We will use
-OpenShift build services to build a container with the front-end and run it on the cluster.
-
-The front-end image leverages the offical [Apache Httpd 2.4](https://access.redhat.com/containers/?tab=tech-details#/registry.access.redhat.com/rhscl/httpd-24-rhel7) image from Red Hat's container registry. 
-
-```oc import-image rhscl/httpd-24-rhel7 --from=quay.io/weimeilin79/httpd-24-rhel7 --confirm```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20import-image%20rhscl%2Fhttpd-24-rhel7%20--from=quay.io%2weimeilin79%shttpd-24-rhel7%20--confirm&completion=Imported%20the%20image. "Imported httpd image"){.didact})
-
-Then we can proceed to creating the build configuration and starting the build within the OpenShift cluster. 
-The following command replaces the URL for the timeline API on the Java Script code and launches an image build.
 
 
-```URL=$(oc get ksvc timeline-bridge -o 'jsonpath={.status.url}') ; cat ./front-end/Dockerfile|  oc new-build --docker-image="quay.io/weimeilin79/httpd-24-rhel7:latest" --to=front-end --build-arg="URL=$URL" -D -```
+## 4. Uninstall
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL=$%28oc%20get%20ksvc%20timeline-bridge%20-o%20%27jsonpath=%7B.status.url%7D%27%29%20%3B%20cat%20.%2Ffront-end%2FDockerfile%7C%20oc%20new-build%20--docker-image=quay.io%2weimeilin79%2httpd-24-rhel7:latest%20--to=front-end%20--build-arg=URL=$URL%20-D%20-&completion=Created%20the%20build%20configuration. "Creates the build configuration"){.didact})
+To cleanup everything, execute the following command:
 
+```oc delete project camel-k-event-streaming event-streaming-messaging-broker event-streaming-kafka-cluster```
 
-Open the [front-end/front-end.yaml](didact://?commandId=vscode.open&projectFilePath=../camel-k-example-event-streaming/front-end/front-end.yaml&newWindow=false&completion=Ok. "Edit the secret configuration"){.didact}
-
-Replace image namespace with your username
-
-```
-image: image-registry.openshift-image-registry.svc:5000/userX-lab-streaming/front-end:latest
-```
-
-With the build complete, we can go ahead and create a deployment for the front-end:
-
-```oc apply -f front-end/front-end.yaml```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20apply%20-f%20front-end%2Ffront-end.yaml&completion=Deployed%20the%20front-end. "Deploys the front-end"){.didact})
-
-The last thing missing is finding the URL for the front-end so that we can open it on the browser.
-
-To find the public API for the service, we can run the following command:
-
-```oc get routes front-end-external -o 'jsonpath={.spec.port.targetPort}://{.spec.host}'```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20get%20routes%20front-end-external%20-o%20%27jsonpath=%7B.spec.port.targetPort%7D:%2F%2F%7B.spec.host%7D%27&completion=Found%20the%20front-end%20URL. "Gets the front-end URL"){.didact})
-
-Open this URL on the browser and we can now access the front-end.
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20delete%20project%20camel-k-event-streaming%20event-streaming-messaging-broker%20event-streaming-kafka-cluster&completion=Removed%20the%20projects%20from%20the%20cluster. "Cleans up the cluster after running the projects"){.didact})
