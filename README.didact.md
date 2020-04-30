@@ -112,6 +112,15 @@ You can install it from the VS Code Extensions marketplace.
 This demo simulates a global hazard alert system. The simulator consumes data from a public APIs available on the internet
 as well as user-provided data that simulates different types of hazards (ie.: crime, viruses, natural hazards and others).
 The system consumes data from OpenAQ API to query air pollution information consume, present information and warn the user when certain incidents happen.
+![Diagram](docs/Overview.png)
+
+
+## Understanding the Infrastructure
+This demo spans over 3 namespaces in the cluster, one hosting the Streaming services, one hosting the broker, and a main namespace for all the system applications.
+
+In the Streaming namespace, you will have 3 topics listening to the events (pollution, crime and timeline). In the Broker namespace, you will have two topics listening to the notification and alarm events. 
+
+In the main namespace, this is where you run all the Camel K microservices and fuctions. 
 
 ![Diagram](docs/Diagram.png)
 
@@ -238,6 +247,7 @@ We can push the secret to the cluster using the following command:
 With this configuration secret created on the cluster, we have completed the initial steps to get the demo running.
 
 ### Pollution Report 
+
 ![Diagram](docs/Pollution.png)
 
 #### Running the OpenAQ Consumer
@@ -300,6 +310,7 @@ To find the public API for the service, we can run the following command:
 
 Open this URL on the browser and we can now access the front-end, and you should be able to see the pollution now showing in the browser. If pm > 25 it will display as RED and yellow for the rest. 
 
+![Diagram](docs/Pollution-result.png)
 
 ### Crime Report 
 ![Diagram](docs/Crime.png)
@@ -333,8 +344,6 @@ The [Event Report System](didact://?commandId=vscode.open&projectFilePath=./user
 
 
 
-
-
 #### Running the Crime Bridge
 
 ```kamel run event-bridge/CrimeBridge.java model/common/* --name crime-bridge```
@@ -343,16 +352,21 @@ The [Event Report System](didact://?commandId=vscode.open&projectFilePath=./user
 
 
 
-#### Checking the State of the Integrations
+#### Report a crime incident from cloud event
 
 Now that we launched all the services, let's check the state of our integrations. We can do
 so with the command:
 
-```kamel get```
+```URL=$(oc get ksvc event-report-system -o 'jsonpath={.status.url}')```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20get&completion=Checked%20the%20state%20of%20the%20integrations. "Checks the state of the integrations"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL=$(oc%20get%20ksvc%20event-report-system%20-o%20'jsonpath={.status.url}')%20&completion=Get%20report%20system%20URL. "Get report system URL"){.didact})
 
 
+```curl --location --request POST $URL  --header 'ce-specversion: 1.0' --header 'ce-source: police-center' --header 'ce-type: hazard-event' --header 'ce-id: crime-123abc' --header 'content-type: application/json' --header 'Content-Type: application/json' --data-raw '{ "user": { "name": "user1" }, "report": { "type": "crime", "alert": "true", "measurement": "crime", "location": "20 W 34th St, New York" } }'```
+
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20--location%20--request%20POST%20$URL%20--header%20'ce-specversion:%201.0'%20--header%20'ce-source:%20police-center'%20--header%20'ce-type:%20hazard-event'%20--header%20'ce-id:%20crime-123abc'%20--header%20'content-type:%20application/json'%20--header%20'Content-Type:%20application/json'%20--data-raw%20'{%20"user":%20{%20"name":%20"user1"%20},%20"report":%20{%20"type":%20"crime",%20"alert":%20"true",%20"measurement":%20"crime",%20"location":%20"20%20W%2034th%20St,%20New%20York"%20}%20}'&completion=Create%20a%20cloudevent%20for%20crime. "Create a cloudevent for Crime"){.didact})
+
+![Diagram](docs/Crime-result.png)
 
 
 ## 4. Uninstall
