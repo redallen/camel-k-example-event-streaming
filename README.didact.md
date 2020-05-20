@@ -134,9 +134,9 @@ We switch to the `event-streaming-kafka-cluster` project to create the Kafka clu
 
 The next step is to use the operator to create an AMQ Streams cluster. This can be done with the command:
 
-```oc create -f infra/kafka/clusters/event-streaming-cluster.yaml```
+```oc create -f infra/kafka/clusters/event-streaming-kafka-cluster.yaml```
 
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20create%20-f%20infra%2Fkafka%2Fclusters%2Fevent-streaming-cluster.yaml&completion=Created%20the%20AMQ%20Streams%20cluster. "Creates the AMQ Streams cluster"){.didact})
+([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$oc%20create%20-f%20infra%2Fkafka%2Fclusters%2Fevent-streaming-kafka-cluster.yaml&completion=Created%20the%20AMQ%20Streams%20cluster. "Creates the AMQ Streams cluster"){.didact})
 
 Depending on how large your OpenShift cluster is, this may take a little while to complete. Let's run this command and wait until the cluster is up and running.
 
